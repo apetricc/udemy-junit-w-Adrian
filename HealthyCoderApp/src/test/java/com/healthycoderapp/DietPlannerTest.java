@@ -48,4 +48,34 @@ class DietPlannerTest {
 		
 	}
 
+	//if we had a method that generated random values, 
+	// or we used multiple threads or something, we might want to run the test
+	// multiple times, to do that we can use the @RepeatedTest annotation: 
+	
+	@RepeatedTest(value = 10, name = RepeatedTest.LONG_DISPLAY_NAME)
+	void should_ReturnCorrectDietPlan_When_CorrectCoder_RepeatedTest() {
+		// given
+		Coder coder = new Coder(1.82, 75.0, 26, Gender.MALE);
+		DietPlan expected = new DietPlan(2202, 110, 73, 275); 
+		
+		
+		// when
+		DietPlan actual = dietPlanner.calculateDiet(coder);
+		
+		
+		// then
+		// we might be tempted to just put an 'assertEquals', but this won't work 
+		// b/c these are 2 separate objects in memory
+//		assertEquals(expected, actual);
+
+		//instead, we need to compare what's in the objects using 'assertAll':
+		assertAll(
+				() -> assertEquals(expected.getCalories(), actual.getCalories()),
+				() -> assertEquals(expected.getProtein(), actual.getProtein()),
+				() -> assertEquals(expected.getFat(), actual.getFat()),
+				() -> assertEquals(expected.getCarbohydrate(), actual.getCarbohydrate())				
+		);
+		
+	}
+	
 }
