@@ -2,6 +2,7 @@ package com.healthycoderapp;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.time.Duration;
 import java.util.*;
 
 import org.junit.jupiter.api.*;
@@ -180,6 +181,30 @@ class BMICalculatorTest {
 				() -> assertEquals(98.0, coderWorstBMI.getWeight())
 			);   
 	}
+	
+	//if we need to test how long our test is taking, or a method is taking, we 
+	// can put a test depending on the time it takes like this-->
+	// this could really be useful for testing an API and making sure it 
+	// does its work within a given SLA--nice!
+	
+	@Test
+	void should_ReturnCoderWithWorstBMIin1Ms_When_CoderListHas10000Elements() {
+		//given
+		List<Coder> coders = new ArrayList<>();
+		for (int i = 0; i < 10000; i++) {
+			coders.add(new Coder(1.0 + i, 10.0 + i));
+		}
+		
+		//when
+		Executable executable = () -> BMICalculator.findCoderWithWorstBMI(coders);
+		
+		//then
+		assertTimeout(Duration.ofMillis(500), executable);
+		
+	}
+	
+	
+	
 	
 	@Test
 	void should_ReturnNullWorstBMICoder_When_CoderListEmpty() {
