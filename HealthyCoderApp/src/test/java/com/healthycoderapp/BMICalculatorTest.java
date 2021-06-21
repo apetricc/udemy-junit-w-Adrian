@@ -4,10 +4,28 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.*;
 
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.function.Executable;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.*;
 
 class BMICalculatorTest {
+	
+	//there is also @BeforeAll which is used to run operations that are too expensive to be run before each unit test case, 
+	// for example: setting up connection to a DB, or starting servers etc.; this code is way to simple to need it, 
+	// so we're just going to print something to the console
+	
+	@BeforeAll    
+	static void beforeAll() {
+		System.out.println("Before all unit tests."); 
+	}
+	
+	//@AfterAll is the opposite of @BeforeAll, so we could use it to close a DB connection or shut down a server, 
+	// we would use these to run things only once 
+	@AfterAll
+	static void afterAll() {
+		System.out.println("After all unit tests.");
+	}
 
 	@Test
 	void should_ReturnTrue_When_DietRecommended() {
@@ -23,6 +41,82 @@ class BMICalculatorTest {
 		assertTrue(recommended);  // using  a boolean like this makes things more clear and easier to read for later/someone else reading the code;
 //		assertTrue(BMICalculator.isDietRecommended(89.0, 1.72));  // our old version, less readable; 
 	}
+	
+	/** 
+	 * our above test only tests one specific test case; if we wanted to test more scenarios, we could write more 
+	 * tests with slightly different parameters, but this would not be a good practice or efficient. 
+	 * instead, we can use the @ParameterizedTest annotation like below:
+	 * 
+	 * to auto-magically insert the values to use, we can use the @ValueSource annotation and provide some values to use,
+	 * we also seem to have to pass in a value in the method signature.
+	 */
+	
+	@ParameterizedTest
+	@ValueSource(doubles = {89.0, 95.0, 110.0})      
+	void should_ReturnTrue_When_DietRecommended_Parameterized_SingleValue(Double coderWeight) {
+		//given   aka 'arrange'
+		double weight = coderWeight;
+		double height = 1.72;
+		
+		//when   aka 'act'
+		boolean recommended = BMICalculator.isDietRecommended(weight, height);
+		
+		// then   aka 'assert'
+		assertTrue(recommended); 
+	}
+	
+	
+	//we can pass multiple values with the @CsvSource, with which we have to say value = {"string values", "more values"}
+	@ParameterizedTest
+	@CsvSource(value = {"89.0, 1.72",  "95.0, 1.75",  "110.0, 1.78"})      
+	void should_ReturnTrue_When_DietRecommended_Parameterized_MultipleValues(Double coderWeight, Double coderHeight) {
+		//given   aka 'arrange'
+		double weight = coderWeight;
+		double height = coderHeight;
+		
+		//when   aka 'act'
+		boolean recommended = BMICalculator.isDietRecommended(weight, height);
+		
+		// then   aka 'assert'
+		assertTrue(recommended); 
+	}
+	
+	//we can also make it easier to read (in the junit run window for this method) by stating the names of the values in relation to each other like so: 
+	
+	@ParameterizedTest(name = "weight={0}, height={1}")
+	@CsvSource(value = {"89.0, 1.72",  "95.0, 1.75",  "110.0, 1.78"})      
+	void should_ReturnTrue_When_DietRecommended_Parameterized_MultipleValues_Named(Double coderWeight, Double coderHeight) {
+		//given   aka 'arrange'
+		double weight = coderWeight;
+		double height = coderHeight;
+		
+		//when   aka 'act'
+		boolean recommended = BMICalculator.isDietRecommended(weight, height);
+		
+		// then   aka 'assert'
+		assertTrue(recommended); 
+	}
+
+	//we can also import values from an actual CSV file ( CSV == 'column separated rows') 
+	// we just have to change the one line where we specify the source of the values;
+	// we copied the file to src/test/resources, and this is the default location junit will look, 
+	// so we just have to give the "/" and the file name, we also specify to skip the first line b/c
+	// that has the field names instead of values; 
+	
+	@ParameterizedTest(name = "weight={0}, height={1}")
+	@CsvFileSource(resources = "/diet-recommended-input-data.csv", numLinesToSkip = 1)
+	void should_ReturnTrue_When_DietRecommended_Parameterized_MultipleValues_FromFile(Double coderWeight, Double coderHeight) {
+		//given   aka 'arrange'
+		double weight = coderWeight;
+		double height = coderHeight;
+		
+		//when   aka 'act'
+		boolean recommended = BMICalculator.isDietRecommended(weight, height);
+		
+		// then   aka 'assert'
+		assertTrue(recommended); 
+	}	
+	
 	
 	@Test
 	void should_ReturnFalse_When_DietNotRecommended() {
